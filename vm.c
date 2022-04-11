@@ -392,6 +392,89 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
   return 0;
 }
 
+int 
+mprotect(void *addr, int len)
+{
+
+  struct proc *currentProcess = myproc();
+  
+  
+  if(len <= 0 || (int)addr+len*PGSIZE>currentProcess->vlimit){
+    cprintf("\n Length is too big \n");
+    return -1;
+  }
+  else 
+  {   
+    if((int)(((int) addr) % PGSIZE )  != 0){
+      cprintf("\n Addr points to the wrong address %p\n", addr);
+      return -1;
+    }
+    else 
+    {
+      pte_t *pageTableEntry;
+      int i = (int) addr;
+      while( i < ((int) addr + (len) *PGSIZE) )
+      {
+       pageTableEntry = walkpgdir(currentProcess->pgdir,(void*) i, 0);
+
+         if(pageTableEntry && ((*pageTableEntry & PTE_U) != 0) && ((*pageTableEntry & PTE_P) != 0) ){
+            *pageTableEntry = (*pageTableEntry) & (~PTE_W) ;  
+               cprintf("\nPTE : 0x%p\n", pageTableEntry);
+       } 
+       else 
+       {
+           return -1;
+       }
+        lcr3(V2P(currentProcess->pgdir));        
+      }
+    }
+  }
+   return 0;
+}
+
+
+int
+munprotect(void *addr, int len){
+
+   
+   struct proc *currentProcess = myproc();
+  
+  
+  if(len <= 0 || (int)addr+len*PGSIZE>currentProcess->vlimit){
+     cprintf("\n Len is too big \n");
+    return -1;
+  }
+  else 
+  {
+    if((int)(((int) addr) % PGSIZE )  != 0){
+       cprintf("\n Addr points to the wrong address %p\n", addr);
+      return -1;
+    }
+    else 
+    {
+      pte_t *pageTableEntry;
+      int i = (int) addr;
+      while( i < ((int) addr + (len) *PGSIZE) )
+      {
+        pageTableEntry = walkpgdir(currentProcess->pgdir,(void*) i, 0);
+
+         if(pageTableEntry && ((*pageTableEntry & PTE_U) != 0) && ((*pageTableEntry & PTE_P) != 0) ){
+            *pageTableEntry = (*pageTableEntry) | (PTE_W);
+               cprintf("\nPTE : 0x%p\n", pageTableEntry);
+       } 
+       else 
+       {
+           return -1;
+       }
+        lcr3(V2P(currentProcess->pgdir));          
+      }
+    }
+  }
+  return 0;
+}
+
+
+
 //PAGEBREAK!
 // Blank page.
 //PAGEBREAK!
