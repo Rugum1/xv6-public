@@ -424,11 +424,12 @@ mprotect(void *addr, int len)
        else 
        {
            return -1;
-       }
-        lcr3(V2P(currentProcess->pgdir));        
+        }  
+        i = i + PGSIZE;      
       }
     }
   }
+   lcr3(V2P(currentProcess->pgdir));
    return 0;
 }
 
@@ -465,16 +466,14 @@ munprotect(void *addr, int len){
        else 
        {
            return -1;
-       }
-        lcr3(V2P(currentProcess->pgdir));          
+        }   
+        i = i + PGSIZE;
       }
     }
   }
+   lcr3(V2P(currentProcess->pgdir));    
   return 0;
 }
-
-
-
 //PAGEBREAK!
 // Blank page.
 //PAGEBREAK!
